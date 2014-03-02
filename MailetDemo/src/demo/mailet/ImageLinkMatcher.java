@@ -1,6 +1,8 @@
 package demo.mailet;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -13,13 +15,9 @@ import org.apache.mailet.MatcherConfig;
 public class ImageLinkMatcher extends HasAttachment {
 
 	/**
-	 * GIF attachment MIME type
+	 * Image attachment MIME type
 	 */
-	private static String m_gifAttachmentMimeType = "image/gif";
-	private static String m_jpegAttachmentMimeType = "image/jpeg";
-	private static String m_pjpegAttachmentMimeType = "image/pjpeg";
-	private static String m_pngAttachmentMimeType = "image/png";
-	//private static String m_svgxmlAttachmentMimeType = "image/svg+xml";
+	private static String contentTypeStartWith = "image/";
 
 	/**
 	 * Init method inherited from GenericMatcher
@@ -33,34 +31,28 @@ public class ImageLinkMatcher extends HasAttachment {
 
 	/**
 	 * Implement the match method in the GenericMatcher interface. See if the
-	 * email has an attachment of type "image/gif".
+	 * email has an attachment of type "image/".
 	 * 
 	 * @param mail
 	 *            the email message
 	 */
 	public Collection match(Mail mail) throws MessagingException {
-		boolean foundImageAttachment = false;
-
+		List mmps = new ArrayList();
+		
 		MimeMultipart mmp;
 		try {
 			mmp = (MimeMultipart) mail.getMessage().getContent();
 			for (int i = 0; i < mmp.getCount(); i++) {
 				MimeBodyPart mbp = (MimeBodyPart) mmp.getBodyPart(i);
-				if (mbp.getContentType().equals(m_gifAttachmentMimeType) | mbp.getContentType().equals(m_jpegAttachmentMimeType) | mbp.getContentType().equals(m_pjpegAttachmentMimeType) | mbp.getContentType().equals(m_pngAttachmentMimeType)) {
-					foundImageAttachment = true;
-					break;
+				if (mbp.getContentType().startsWith(contentTypeStartWith)) {
+					mmps.add(mbp);
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			Put logger
+//			e.printStackTrace();
 		}
 
-		if (foundImageAttachment) {
-			// this message needs further processing
-			return mail.getRecipients();
-		} else {
-			return null;
-		}
+		return mmps;
 	}
 }
